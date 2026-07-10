@@ -8,6 +8,8 @@ import {
 import { recordChatCompletionMetrics } from "@llmgateway/instrumentation";
 import { logger } from "@llmgateway/logger";
 
+import { recordSpend } from "./spend-limit.js";
+
 import type { InferInsertModel } from "@llmgateway/db";
 
 /**
@@ -327,6 +329,11 @@ export async function insertLog(
 			: undefined,
 		errorType,
 	});
+
+	// Maintain per-org daily/monthly spend-cap counters. Single DRY chokepoint
+	// for every request path; only increments when cost > 0 and swallows its own
+	// Redis errors so logging is never blocked.
+	await recordSpend(logData.organizationId, logData.cost ?? 0);
 
 	if (options?.syncInsert) {
 		await db.insert(log).values(logData as LogData);

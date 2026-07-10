@@ -8,8 +8,8 @@ import { isInternalForward } from "@/lib/internal-forward.js";
 import {
 	checkOrgRateLimit,
 	getOrganizationLifetimeSpend,
+	getOrgSpendTier,
 	getPlanClass,
-	getSpendTierMultiplier,
 	isOrgRateLimitEnabled,
 	resolveOrganizationIdForToken,
 	resolvePathRateLimit,
@@ -88,7 +88,7 @@ export async function orgRateLimitMiddleware(
 				return 1;
 			}
 			const lifetimeSpend = await getOrganizationLifetimeSpend(organizationId);
-			return getSpendTierMultiplier(lifetimeSpend).multiplier;
+			return getOrgSpendTier(organization, lifetimeSpend).rpmMultiplier;
 		},
 	);
 
